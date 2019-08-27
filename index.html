@@ -90,7 +90,7 @@ input, button {
           this.updating = this.updating.bind(this);
         }
         updating(){
-          this.props.updating({ text: this.state.text })
+          this.props.updating({ note: this.state.note })
             .then(()=> this.props.history.push('/notes'));
         }
         render() {
@@ -140,6 +140,7 @@ input, button {
             notes: []
           };
           this.update = this.update.bind(this);
+          this.updating = this.updating.bind(this);
           this.create = this.create.bind(this);
           this.destroy = this.destroy.bind(this);
         }
@@ -156,6 +157,10 @@ input, button {
           const updated = (await axios.put(`${API}/users/${this.state.user.id}/notes/${note.id}`, { archived: note.archived, text: note.text })).data;
           this.setState({ notes : this.state.notes.map( note => note.id === updated.id ? updated : note)});
         }
+        async updating(note){
+          const nowUpdating = (await axios.put(`${API}/users/${this.state.user.id}/notes/${note.id}`, { archived: note.archived, text: note.text })).data;
+          this.setState({ notes : this.state.notes.map( note => note.id === nowUpdating.id ? nowUpdating : note)});
+        }
         async create(note){
           const created = (await axios.post(`${API}/users/${this.state.user.id}/notes`, note)).data;
           const notes = [...this.state.notes, created ];
@@ -163,7 +168,7 @@ input, button {
         }
         render(){
           const { notes, user } = this.state;
-          const { update, create, destroy } = this;
+          const { update, create, destroy, updating } = this;
           return (
             <HashRouter>
               <Route render={ ({ location } )=> <Nav path={ location.pathname } notes={ notes } />} />
@@ -172,7 +177,7 @@ input, button {
                 <Route exact path='/notes' render={ ()=> <Notes destroy={ destroy} archived={ false } notes={ notes} update={ update }/> } />
                 <Route path='/notes/create' render={ ({ history })=> <Create history={ history } create={ create } notes={ notes } /> } />
                 <Route path='/archived' render={ ()=> <Notes destroy={ destroy } archived={ true } notes={ notes} update={ update }/> } />
-                <Route path='/notes/update' render={ (props)=> <Updating {...props} create={ create } notes={ notes } /> } />
+                <Route path='/notes/update' render={ (props)=> <Updating {...props} updating={ updating } notes={ notes } /> } />
                 <Redirect to='/notes' />
               </Switch>
             </HashRouter>
